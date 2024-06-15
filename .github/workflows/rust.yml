@@ -1,0 +1,28 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - name: Build Solana program
+      run: cargo build-bpf --manifest-path=backend/Cargo.toml --bpf-out-dir=backend/target/deploy
+
+    - name: Deploy Solana program
+      env:
+        SOLANA_KEYPAIR: ${{ secrets.SOLANA_KEYPAIR }}
+      run: solana program deploy backend/target/deploy/solana_nft_minting.so
